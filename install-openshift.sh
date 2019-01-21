@@ -121,9 +121,13 @@ else
 	cp /etc/sysconfig/docker-storage-setup /etc/sysconfig/docker-storage-setup.bk
 
 	echo DEVS=$DISK > /etc/sysconfig/docker-storage-setup
-	echo VG=DOCKER >> /etc/sysconfig/docker-storage-setup
-	echo SETUP_LVM_THIN_POOL=yes >> /etc/sysconfig/docker-storage-setup
-	echo DATA_SIZE="100%FREE" >> /etc/sysconfig/docker-storage-setup
+	echo VG="docker-vg" >> /etc/sysconfig/docker-storage-setup
+	echo DATA_SIZE="95%VG" >> /etc/sysconfig/docker-storage-setup
+	echo STORAGE_DRIVER=overlay2 >> /etc/sysconfig/docker-storage-setup
+	echo CONTAINER_ROOT_LV_NAME="dockerlv" >> /etc/sysconfig/docker-storage-setup
+	echo CONTAINER_ROOT_LV_MOUNT_PATH="/var/lib/docker" >> /etc/sysconfig/docker-storage-setup
+	echo CONTAINER_ROOT_LV_SIZE="100%FREE" >> /etc/sysconfig/docker-storage-setup
+	echo WIPE_SIGNATURES=true >> /etc/sysconfig/docker-storage-setup
 
 	systemctl stop docker
 
