@@ -145,6 +145,10 @@ if [ ! -f ~/.ssh/id_rsa ]; then
 	ssh -o StrictHostKeyChecking=no root@$IP "pwd" < /dev/null
 fi
 
+if [ $BASTION -eq "no" ]; then
+	exit
+fi
+
 export METRICS="True"
 export LOGGING="True"
 
@@ -174,7 +178,7 @@ if [ ! -z "${HTTPS_PROXY:-${https_proxy:-${HTTP_PROXY:-${http_proxy}}}}" ]; then
 	echo "openshift_no_proxy=\"${__no_proxy}\"" >> inventory.ini
 fi
 
-mkdir -p /etc/origin/master/
+echo "mkdir -p /etc/origin/master/
 touch /etc/origin/master/htpasswd
 htpasswd -b /etc/origin/master/htpasswd ${USERNAME} ${PASSWORD}
 
