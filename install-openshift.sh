@@ -8,6 +8,7 @@ export DOMAIN=${DOMAIN:="$(hostname)"}
 export USERNAME=${USERNAME:="$(whoami)"}
 export PASSWORD=${PASSWORD:=admin}
 export VERSION="3.11"
+export BASTION="yes"
 export REPOVERSION=${REPOVERSION:="$(echo $VERSION | tr -d .)"}
 export SCRIPT_REPO=${SCRIPT_REPO:="https://raw.githubusercontent.com/dpdevel/openshift311-on-centos/master"}
 export IP_MST=${IP_MST:="$(ip route get 8.8.8.8 | awk '{print $NF; exit}')"}
@@ -48,6 +49,11 @@ if [ "$INTERACTIVE" = "true" ]; then
 	read -rp "IP APP: ($IP_APP): " choice;
 	if [ "$choice" != "" ] ; then
 		export IP_APP="$choice";
+	fi 
+	
+	read -rp "BASTION: ($BASTION): " choice;
+	if [ "$choice" != "" ] ; then
+		export BASTION="$choice";
 	fi 
 
 	echo
@@ -91,17 +97,19 @@ fi
 # install the packages for Ansible
 yum -y --enablerepo=epel install pyOpenSSL
 
-curl -o ansible.rpm https://releases.ansible.com/ansible/rpm/release/epel-7-x86_64/ansible-2.6.5-1.el7.ans.noarch.rpm
-yum -y --enablerepo=epel install ansible.rpm
+if [ $BASTION -eq "yes" ]; then
+	curl -o ansible.rpm https://releases.ansible.com/ansible/rpm/release/epel-7-x86_64/ansible-2.6.5-1.el7.ans.noarch.rpm
+	yum -y --enablerepo=epel install ansible.rpm
 
-[ ! -d openshift-ansible ] && git clone --branch release-${VERSION} https://github.com/openshift/openshift-ansible.git
+	[ ! -d openshift-ansible ] && git clone --branch release-${VERSION} https://github.com/openshift/openshift-ansible.git
 
-cd openshift-ansible && git fetch && git checkout release-${VERSION} && cd ..
+	cd openshift-ansible && git fetch && git checkout release-${VERSION} && cd ..
+fi
 
 cat <<EOD > /etc/hosts
 127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4 
 ::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
-${IP_MST}		$(hostname) console console.${DOMAIN}
+${IP_MST}		ocp-mst01 console console.${DOMAIN}
 ${IP_INF}		ocp-inf01 
 ${IP_APP}		ocp-app01
 
