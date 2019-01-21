@@ -10,7 +10,7 @@ export PASSWORD=${PASSWORD:=admin}
 export VERSION="3.11"
 export REPOVERSION=${REPOVERSION:="$(echo $VERSION | tr -d .)"}
 export SCRIPT_REPO=${SCRIPT_REPO:="https://raw.githubusercontent.com/dpdevel/openshift311-on-centos/master"}
-export IP=${IP:="$(ip route get 8.8.8.8 | awk '{print $NF; exit}')"}
+export IP_MST=${IP_MST:="$(ip route get 8.8.8.8 | awk '{print $NF; exit}')"}
 export API_PORT=${API_PORT:="8443"}
 
 ## Make the script interactive to set the variables
@@ -30,14 +30,24 @@ if [ "$INTERACTIVE" = "true" ]; then
 		export PASSWORD="$choice";
 	fi
 
-	read -rp "IP: ($IP): " choice;
+	read -rp "IP_MST: ($IP_MST): " choice;
 	if [ "$choice" != "" ] ; then
-		export IP="$choice";
+		export IP_MST="$choice";
 	fi
 
 	read -rp "API Port: ($API_PORT): " choice;
 	if [ "$choice" != "" ] ; then
 		export API_PORT="$choice";
+	fi 
+	
+	read -rp "IP INF: ($IP_INF): " choice;
+	if [ "$choice" != "" ] ; then
+		export IP_INF="$choice";
+	fi 
+	
+	read -rp "IP APP: ($IP_APP): " choice;
+	if [ "$choice" != "" ] ; then
+		export IP_APP="$choice";
 	fi 
 
 	echo
@@ -46,7 +56,9 @@ fi
 
 echo "******"
 echo "* Your domain is $DOMAIN "
-echo "* Your IP is $IP "
+echo "* Your IP_MST is $IP_MST "
+echo "* Your IP_INF is $IP_INF "
+echo "* Your IP_APP is $IP_APP "
 echo "* Your username is $USERNAME "
 echo "* Your password is $PASSWORD "
 echo "* OpenShift version: $VERSION "
@@ -89,7 +101,10 @@ cd openshift-ansible && git fetch && git checkout release-${VERSION} && cd ..
 cat <<EOD > /etc/hosts
 127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4 
 ::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
-${IP}		$(hostname) console console.${DOMAIN}  
+${IP_MST}		$(hostname) console console.${DOMAIN}
+${IP_INF}		ocp-inf01 
+${IP_APP}		ocp-app01
+
 EOD
 
 if [ -z $DISK ]; then 
@@ -151,9 +166,11 @@ mkdir -p /etc/origin/master/
 touch /etc/origin/master/htpasswd
 htpasswd -b /etc/origin/master/htpasswd ${USERNAME} ${PASSWORD}
 
-echo "#### NOW YOU CAN EXCUTE: ####"
+echo "********************************"
+echo "*** NOW YOU CAN EXCUTE: ***"
 echo "--> ansible-playbook -i inventory.ini openshift-ansible/playbooks/prerequisites.yml"
 echo "--> ansible-playbook -i inventory.ini openshift-ansible/playbooks/deploy_cluster.yml"
+echo 
 
 #if [ $? -ne 0 ]; then
 #	echo "error install ocp-$VERSION"
@@ -181,9 +198,8 @@ echo "--> oc adm policy add-cluster-role-to-user cluster-admin ${USERNAME}"
 #	rm oc_vol.yaml
 #fi
 
-echo "#### SAVE THIS: ####" 
-
-echo "******"
+echo
+echo "******** After install: ************"
 echo "* Your console is https://console.$DOMAIN:$API_PORT"
 echo "* Your username is $USERNAME "
 echo "* Your password is $PASSWORD "
