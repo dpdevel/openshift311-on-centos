@@ -97,7 +97,7 @@ fi
 # install the packages for Ansible
 yum -y --enablerepo=epel install pyOpenSSL
 
-if [ $BASTION -eq "yes" ]; then
+if [ $BASTION == "yes" ]; then
 	curl -o ansible.rpm https://releases.ansible.com/ansible/rpm/release/epel-7-x86_64/ansible-2.6.5-1.el7.ans.noarch.rpm
 	yum -y --enablerepo=epel install ansible.rpm
 
@@ -112,7 +112,6 @@ cat <<EOD > /etc/hosts
 ${IP_MST}		ocp-mst01 console console.${DOMAIN}
 ${IP_INF}		ocp-inf01 
 ${IP_APP}		ocp-app01
-
 EOD
 
 if [ -z $DISK ]; then 
@@ -145,7 +144,7 @@ if [ ! -f ~/.ssh/id_rsa ]; then
 	ssh -o StrictHostKeyChecking=no root@$IP "pwd" < /dev/null
 fi
 
-if [ $BASTION -eq "no" ]; then
+if [ $BASTION == "no" ]; then
 	exit
 fi
 
