@@ -177,7 +177,7 @@ if [ ! -z "${HTTPS_PROXY:-${https_proxy:-${HTTP_PROXY:-${http_proxy}}}}" ]; then
 	echo "openshift_no_proxy=\"${__no_proxy}\"" >> inventory.ini
 fi
 
-echo "mkdir -p /etc/origin/master/
+mkdir -p /etc/origin/master/
 touch /etc/origin/master/htpasswd
 htpasswd -b /etc/origin/master/htpasswd ${USERNAME} ${PASSWORD}
 
@@ -223,7 +223,3 @@ echo "* Login using:"
 echo "*"
 echo "$ oc login -u ${USERNAME} -p ${PASSWORD} https://console.$DOMAIN:$API_PORT/"
 echo "******"
-
-echo "oc login -u ${USERNAME} -p ${PASSWORD} https://console.$DOMAIN:$API_PORT/"
-
-
